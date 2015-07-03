@@ -1,7 +1,5 @@
 # highlyresponsive-forever
-Omage to TH1
-
-Remake of the first touhou game Highly Responsive to Prayers. 
+Omage to TH1 - Remake of the first touhou game Highly Responsive to Prayers. 
 
 # Tasks
 ## Milestones
