@@ -2,15 +2,14 @@
 Omage to TH1 - Remake of the first touhou game Highly Responsive to Prayers. 
 
 # Tasks
-## Milestones
 - Playable level with tilemaps in place
-- Trippy WebGL shader backgrounds
+- Player animations and strikes
+	* running slide kick
+	* standing swipe
 - Good player and ball interactions
-
-## To-Do
-- Collision groups
+	* ball physics
+	* ball min speed
 - Bullets
-- Player strikes
-- tilemap engine (json)
-- Smoother player movement tests - do we want this
-- ball physics just right
+	* collides with ball
+- tilemap engine (json?)
+

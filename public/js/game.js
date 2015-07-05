@@ -3,61 +3,101 @@ var game = new Phaser.Game(800, 600, Phaser.AUTO, 'game', { preload: preload, cr
 var player;
 var ball;
 var cursors;
+var fireButton;
+var bullets;
+var bulletTime = 0;
 
 function preload() {
 	game.load.spritesheet('reimu', 'assets/reimu_sheet.png', 32, 46);
 	game.load.image('ball', 'assets/ball.png');
+	game.load.image('bullet', 'assets/bullet.png');
 }
 
-function create() {    
+function create() {  
 	//system
 	cursors = game.input.keyboard.createCursorKeys();
-	game.physics.startSystem(Phaser.Physics.P2JS);
-	game.physics.p2.gravity.y = 100;
-    game.physics.p2.restitution = 1;
-    game.physics.p2.setImpactEvents(true);
+	fireButton = game.input.keyboard.addKey(Phaser.Keyboard.Z);
+	game.physics.startSystem(Phaser.Physics.ARCADE);
+	game.physics.arcade.gravity.y = 100;
 
 	//player
 	player = game.add.sprite(game.world.centerX, 600 - 23, 'reimu');
-	game.physics.p2.enable(player, true);
+	player.physicsBodyType = Phaser.Physics.ARCADE;
+	game.physics.enable(player, Phaser.Physics.ARCADE);
+	player.body.collideWorldBounds = true;
 	player.animations.add('idle');
-	//player.scale.set(1.2, 1.2);
 	player.anchor.setTo(0.5, 0.5);
-	player.body.fixedRotation = true;
-	player.body.setZeroDamping();
-	player.speed = 500;
-	
+	player.body.allowRotation = false;
+	player.body.allowGravity = false;
+	player.speed = 5;	
 
 	//ball
-	ball = game.add.sprite(0, 500, 'ball');
-	game.physics.p2.enable(ball, true);
+	ball = game.add.sprite(32, 500, 'ball');
+	ball.physicsBodyType = Phaser.Physics.ARCADE;
+	game.physics.enable(ball, Phaser.Physics.ARCADE);
+	ball.body.collideWorldBounds = true;
+	ball.body.allowRotation = true;
+	ball.body.allowGravity = true;
+	ball.body.gravity.set(0, 100);
+	ball.body.bounce.x = 0.8;
+	ball.body.bounce.y = 0.8;	
+ 	ball.anchor.setTo(0.5, 0.5);	
 	ball.scale.set(0.2, 0.2);
-    ball.anchor.setTo(0.5, 0.5);
-	ball.body.setCircle(20);
-	ball.body.angularVelocity += 5;
+
+	//initial velocity
+    ball.body.angularVelocity = 400;
+	ball.body.velocity.set(400, -200);
 
 	//collisions
-    var playerCollisionGroup = game.physics.p2.createCollisionGroup();
-    var ballCollisionGroup = game.physics.p2.createCollisionGroup();
-    ball.body.setCollisionGroup(ballCollisionGroup);
-   	player.body.setCollisionGroup(playerCollisionGroup);
-   	player.body.collides([ballCollisionGroup]);
-    game.physics.p2.updateBoundsCollisionGroup(); //lastly update bouds collision group
+	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
+	game.physics.arcade.overlap(ball, player, ballHitPlayer)
 }
 
-var oldX;
 function update() {
 	player.animations.play('idle', 5);
-	player.body.setZeroVelocity();
 
     if (cursors.left.isDown) {
-    	player.body.moveLeft(400);
+    	player.x -= player.speed;
     } else if (cursors.right.isDown) {
-    	player.body.moveRight(400);
+    	player.x += player.speed;
+    }
+    
+   	if (checkOverlap(player, ball)) {
+   		//ball overlapping player
+   		ballHitPlayer();
+   	}
+   	
+    if (fireButton.isDown) {
+		//Fire player bullet
     }
 
-	game.debug.spriteInfo(player, 32, 32);
-}	
+	if (ball.body.blocked.left) {
+		ball.body.angularVelocity = 400;
+	} else if (ball.body.blocked.right) {
+		ball.body.angularVelocity = -400;
+	}
+
+	game.debug.body(ball);
+	game.debug.bodyInfo(ball, 32, 32);
+
+}
+
+function checkOverlap(spriteA, spriteB) {
+    var boundsA = spriteA.getBounds();
+    var boundsB = spriteB.getBounds();
+    return Phaser.Rectangle.intersects(boundsA, boundsB);
+}
+
+function ballHitPlayer () {
+	//code for player gettin hit
+	// only for ball or bullets as well?
+}
+
+function bulletHitBall (bullet) {
+	ball.body.velocity.y -= 10;
+	resetBullet(bullet);
+	//maybe add animation for bullet destruction	
+}
 
 // Converts from degrees to radians.
 Math.radians = function(degrees) {
