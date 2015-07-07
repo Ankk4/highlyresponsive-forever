@@ -31,26 +31,35 @@ function create() {
 	player.body.allowGravity = false;
 	player.speed = 5;	
 
-	//ball
+	//player bullets
+    bullets = game.add.group();
+    bullets.enableBody = true;
+    bullets.physicsBodyType = Phaser.Physics.ARCADE;
+    bullets.createMultiple(15, 'bullet');
+    bullets.setAll('anchor.x', 0.5);
+    bullets.setAll('outOfBoundsKill', true);
+    bullets.setAll('checkWorldBounds', true);
+    bullets.setAll('scale.x', 1.5);
+
+	//ball -- Pitää vaihtaa takas p2 engineen, koska arcade ei tue circleä -_-
 	ball = game.add.sprite(32, 500, 'ball');
 	ball.physicsBodyType = Phaser.Physics.ARCADE;
 	game.physics.enable(ball, Phaser.Physics.ARCADE);
+	ball.body.hasCollided = false;
 	ball.body.collideWorldBounds = true;
 	ball.body.allowRotation = true;
 	ball.body.allowGravity = true;
-	ball.body.gravity.set(0, 100);
+	ball.body.gravity.set(0, 200);
 	ball.body.bounce.x = 0.8;
-	ball.body.bounce.y = 0.8;	
+	ball.body.bounce.y = 0.8;
  	ball.anchor.setTo(0.5, 0.5);	
-	ball.scale.set(0.2, 0.2);
+	ball.scale.set(0.5, 0.5);
+	//dirty solution to add circle?
+	//var circle = new circle(ball.x, ball.y, ball.body.halfHeight);
 
 	//initial velocity
     ball.body.angularVelocity = 400;
 	ball.body.velocity.set(100, -150);
-
-	//collisions
-	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
-	game.physics.arcade.overlap(ball, player, ballHitPlayer)
 }
 
 var perkele = 5;
@@ -62,14 +71,9 @@ function update() {
     } else if (cursors.right.isDown) {
     	player.x += player.speed;
     }
-    
-   	if (checkOverlap(player, ball)) {
-   		//ball overlapping player
-   		ballHitPlayer();
-   	}
-   	
+       	
     if (fireButton.isDown) {
-		//Fire player bullet
+		fireBullet();
     }
 
 	if (ball.body.blocked.left) {
@@ -85,26 +89,57 @@ function update() {
 	//perkele = min speed - parempi tapa tehä tämä?
 	ball.body.x += perkele;
 
+	//collisions
+	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
+	game.physics.arcade.overlap(ball, player, ballHitPlayer, null, this);
+
 	game.debug.body(ball);
 	game.debug.bodyInfo(ball, 32, 32);
-
 }
 
-function checkOverlap(spriteA, spriteB) {
+function fireBullet () {
+    if (game.time.now > bulletTime)
+    {
+        //  Grab the first bullet we can from the pool
+        bullet = bullets.getFirstExists(false);
+
+        if (bullet)
+        {
+            //  And fire it
+            bullet.reset(player.x, player.y + 8);
+            bullet.body.velocity.y = -800;
+            bulletTime = game.time.now + 100;
+        }
+    }
+}
+
+function resetBullet (bullet) {
+    bullet.kill();
+}
+
+//obsolete?
+function checkOverlapRectangle (spriteA, spriteB) {
     var boundsA = spriteA.getBounds();
     var boundsB = spriteB.getBounds();
     return Phaser.Rectangle.intersects(boundsA, boundsB);
 }
 
-function ballHitPlayer () {
-	//code for player gettin hit
-	// only for ball or bullets as well?
+function checkOverlapCircle (c, r) {
+	return Phaser.Circle.intersectsRectangle(c,r);
 }
 
-function bulletHitBall (bullet) {
-	ball.body.velocity.y -= 10;
-	resetBullet(bullet);
-	//maybe add animation for bullet destruction	
+function checkOverlapDif (cir, rect) {
+}
+
+function ballHitPlayer () {
+	console.log("player hit");
+}
+
+function bulletHitBall (balle, bullete) {
+	console.log("Ball hit");	
+	ball.body.velocity.y = -400;
+	//bounce left or right depending on impact angle?
+	bullete.kill();
 }
 
 // Converts from degrees to radians.
