@@ -62,49 +62,45 @@ function create() {
 	ball.body.velocity.set(100, -150);
 }
 
-var perkele = 5;
 function update() {
-	player.animations.play('idle', 5);
+	// Play idle animation
+    player.animations.play('idle', 5);
 
+    // Check keypresses - move to own file? "enums"
     if (cursors.left.isDown) {
     	player.x -= player.speed;
     } else if (cursors.right.isDown) {
     	player.x += player.speed;
-    }
-       	
+    }    	
     if (fireButton.isDown) {
 		fireBullet();
     }
-
-	if (ball.body.blocked.left) {
+    
+    // Check side collisions - this needs to be function and some work
+    if (ball.body.blocked.left) {
 		ball.body.angularVelocity = 400;
-		perkele *= -1;
 	} else if (ball.body.blocked.right) {
 		ball.body.angularVelocity = -400;
-		perkele *= -1;
 	} else if (ball.body.blocked.down) {
 		ball.body.velocity.y -= 20;
 	}
 
-	//perkele = min speed - parempi tapa tehä tämä?
-	ball.body.x += perkele;
-
-	//collisions
+	// collisions
 	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
 	game.physics.arcade.overlap(ball, player, ballHitPlayer, null, this);
 
+    // debugs
 	game.debug.body(ball);
 	game.debug.bodyInfo(ball, 32, 32);
 }
 
+// HANDLER FOR PLAYER BULLETS
 function fireBullet () {
-    if (game.time.now > bulletTime)
-    {
+    if (game.time.now > bulletTime) {
         //  Grab the first bullet we can from the pool
         bullet = bullets.getFirstExists(false);
 
-        if (bullet)
-        {
+        if (bullet) {
             //  And fire it
             bullet.reset(player.x, player.y + 8);
             bullet.body.velocity.y = -800;
@@ -112,7 +108,7 @@ function fireBullet () {
         }
     }
 }
-
+// Check for handlers
 function resetBullet (bullet) {
     bullet.kill();
 }
@@ -127,10 +123,11 @@ function checkOverlapRectangle (spriteA, spriteB) {
 function checkOverlapCircle (c, r) {
 	return Phaser.Circle.intersectsRectangle(c,r);
 }
-
+// Is this necessery?
 function checkOverlapDif (cir, rect) {
 }
 
+// Player hit detection callback
 function ballHitPlayer () {
 	console.log("player hit");
 }
