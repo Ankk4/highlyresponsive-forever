@@ -1,4 +1,4 @@
-var game = new Phaser.Game(1024, 768, Phaser.AUTO, 'game', { preload: preload, create: create, update: update });
+var game = new Phaser.Game(1024, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update });
 
 var player;
 var ball;
@@ -6,7 +6,6 @@ var cursors;
 var fireButton;
 var bullets;
 var bulletTime = 0;
-
 
 function update() {
 	player.body.setZeroVelocity();
@@ -18,10 +17,13 @@ function update() {
 	// collisions
 	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
 	game.physics.arcade.overlap(ball, player, ballHitPlayer, null, this);
+
+	// Ball spinning "naturally"
+	ball.body.angularVelocity = ball.body.velocity.x / 35;
 	
 	if (checkPlayerBounds(player, bounds)) {
 		if (player.body.x > 512)
-			player.body.x = 1024;
+			player.body.x = bounds.width;
 		else {
 			player.body.x = 0;
 		} 
@@ -49,8 +51,7 @@ function resetBullet (bullet) {
 }
 
 function checkPlayerBounds(r1, r2) {
-	return !checkOverlapRectangle(r1, r2, {"a":true,"b":false});
-	
+	return !checkOverlapRectangle(r1, r2, {"a":true,"b":false});	
 }
 
 //obsolete?
@@ -84,17 +85,17 @@ function bulletHitBall (balle, bullete) {
 	console.log("Distance: ", Phaser.Point.distance(bullete.body.position, balle.body.position));
 
 	ball.body.velocity.y = -400;
-	bullete.kill();
+	bullets.remove(bullete);
 }
 
 // Converts from degrees to radians.
 Math.radians = function(degrees) {
-  return degrees * Math.PI / 180;
+    return degrees * Math.PI / 180;
 };
  
 // Converts from radians to degrees.
 Math.degrees = function(radians) {
-  return radians * 180 / Math.PI;
+    return radians * 180 / Math.PI;
 };
 
 function keyPresses() {
@@ -105,7 +106,7 @@ function keyPresses() {
     	player.body.moveRight(400);
     }
 
-    if (fireButton.isDown) {
+    if (fireButton.onDown) {
 		fireBullet();
     }
 }
