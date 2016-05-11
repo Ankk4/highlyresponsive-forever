@@ -1,10 +1,4 @@
 var game = new Phaser.Game(1024, 720, Phaser.AUTO, 'game', { preload: preload, create: create, update: update });
-
-var player;
-var ball;
-var cursors;
-var fireButton;
-var bullets;
 var bulletTime = 0;
 
 function update() {
@@ -15,26 +9,19 @@ function update() {
     player.animations.play('idle', 5);
 
 	// collisions
-	game.physics.arcade.overlap(ball, bullets, bulletHitBall, null, this);
+	game.physics.arcade.overlap(ball, playerBullets, bulletHitBall, null, this);
 	game.physics.arcade.overlap(ball, player, ballHitPlayer, null, this);
 
 	// Ball spinning "naturally"
 	ball.body.angularVelocity = ball.body.velocity.x / 35;
-	
-	if (checkPlayerBounds(player, bounds)) {
-		if (player.body.x > 512)
-			player.body.x = bounds.width;
-		else {
-			player.body.x = 0;
-		} 
-	}
+    playerBullets = bulletOutOfBounds(playerBullets);
 }
 
 // HANDLER FOR PLAYER BULLETS
 function fireBullet () {
     if (game.time.now > bulletTime) {
         //  Grab the first bullet we can from the pool
-        bullet = bullets.getFirstExists(false);
+        bullet = playerBullets.getFirstExists(false);
 
         if (bullet) {
             //  And fire it
@@ -45,9 +32,14 @@ function fireBullet () {
     }
 }
 
-// Check for handlers
-function resetBullet (bullet) {
-    bullet.kill();
+//Disable bullets for recyling when they leave the screen
+function bulletOutOfBounds(bulletGroup) {
+	for (var i = bulletGroup.children.length - 1; i >= 0; i--) {
+		if(bulletGroup.children[i].position.y < 0) {
+			bulletGroup.children[i].exists = false;
+		}
+	}
+	return bulletGroup;
 }
 
 function checkPlayerBounds(r1, r2) {
@@ -77,15 +69,7 @@ function ballHitPlayer () {
 }
 
 function bulletHitBall (balle, bullete) {
-	console.log("Ball hit");	
-	//ball.body.velocity.y = -400;
-	var defaultForce = 200;
-
-	//bounce left or right depending on impact angle - Not working
-	console.log("Distance: ", Phaser.Point.distance(bullete.body.position, balle.body.position));
-
-	ball.body.velocity.y = -400;
-	bullets.remove(bullete);
+	console.log("Ball hit");
 }
 
 // Converts from degrees to radians.
@@ -100,13 +84,9 @@ Math.degrees = function(radians) {
 
 function keyPresses() {
     if (cursors.left.isDown){
-    	player.body.moveLeft(400);
+    	player.body.moveLeft(500);
     }
     else if (cursors.right.isDown) {
-    	player.body.moveRight(400);
-    }
-
-    if (fireButton.onDown) {
-		fireBullet();
+    	player.body.moveRight(500);
     }
 }
