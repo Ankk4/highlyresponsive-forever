@@ -50,7 +50,7 @@ public class Player : MonoBehaviour
             var bullet = RefBulletPool.Fetch();
             if (bullet)
             {
-                bullet.GetComponent<Bullet>().Activate(transform.localPosition, Vector2.up, 10.0f);
+                bullet.GetComponent<Bullet>().Activate(transform.localPosition, Vector2.up, 30.0f);
                 ShootTimer.Reset();
             }
         }
@@ -85,4 +85,9 @@ public class Player : MonoBehaviour
     }
 
     #endregion Movement
+
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        
+    }
 }
