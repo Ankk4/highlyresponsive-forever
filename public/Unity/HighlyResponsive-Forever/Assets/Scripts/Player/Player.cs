@@ -22,6 +22,7 @@ public class Player : MonoBehaviour
     public float NormalSpeed;
     public float MeleeSpeed;
     public float ShootInterval;
+    public int Lives;
 
     [Header("Force applied to ball on hit")]
     public float Force = 100.0f;
@@ -37,6 +38,7 @@ public class Player : MonoBehaviour
     private float currentSpeed;
     private float horizontalBoundSize;
     private bool? lastDir; // Left = false | Right = true
+    private int defaultLives;
 
     // Use this for initialization
     void Start ()
@@ -61,6 +63,8 @@ public class Player : MonoBehaviour
         fsm.ChangeState(idleState);
 
         lastDir = null;
+
+        defaultLives = Lives;
     }
 	
 	// Update is called once per frame
@@ -213,6 +217,8 @@ public class Player : MonoBehaviour
                     var pos = transform.localPosition;
                     pos.x = 0.0f;
                     transform.localPosition = pos;
+
+                    Lives = Mathf.Clamp(Lives - 1, 0, defaultLives);
                 }
             }
         }
@@ -220,14 +226,9 @@ public class Player : MonoBehaviour
 
     #region State check functions
 
-    bool canMove()
+    public bool IsAlive()
     {
-        return !isMelee();
-    }
-
-    bool canShoot()
-    {
-        return !isMelee();
+        return Lives > 0;
     }
 
     bool isMelee()
@@ -235,5 +236,36 @@ public class Player : MonoBehaviour
         return fsm.m_currentState is MeleeState || fsm.m_currentState is KickState;
     }
 
+    bool canMove()
+    {
+        return !TimeManager.IsPause() && !isMelee();
+    }
+
+    bool canShoot()
+    {
+        return !TimeManager.IsPause() && !isMelee();
+    }
+
     #endregion State check functions
+
+    public void Reset()
+    {
+        // Set x position to middle
+        var pos = transform.localPosition;
+        pos.x = 0.0f;
+        transform.localPosition = pos;
+
+        // Reset current speed
+        currentSpeed = NormalSpeed;
+        
+        // Reset FSM
+        fsm = GetComponent<FSM>();
+        var idleState = ScriptableObject.CreateInstance<IdleState>();
+        idleState.Init(fsm);
+        fsm.ChangeState(idleState);
+
+        lastDir = null;
+
+        Lives = defaultLives; 
+    }
 }

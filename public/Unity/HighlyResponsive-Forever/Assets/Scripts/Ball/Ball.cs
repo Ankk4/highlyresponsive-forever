@@ -23,9 +23,13 @@ public class Ball : MonoBehaviour
     [Header("Object references")]
     public GameObject RefFloor;
 
+    private Vector3 defaultPos;
+
 	// Use this for initialization
 	void Start ()
     {
+        defaultPos = transform.localPosition;
+
         // Generate random direction on start
         var rb = GetComponent<Rigidbody2D>();
         if (rb)
@@ -34,7 +38,7 @@ public class Ball : MonoBehaviour
             Vector2 vel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)) * LaunchSpeed;
             rb.velocity = vel;
         }
-	}
+    }
 	
 	// Update is called once per frame
 	void Update ()
@@ -119,6 +123,22 @@ public class Ball : MonoBehaviour
                 // Reset linear drag when bullet hits
                 rb.drag = 0;
             }
+        }
+    }
+
+    public void Reset()
+    {
+        transform.localPosition = defaultPos;
+
+        // Generate random direction on start
+        var rb = GetComponent<Rigidbody2D>();
+        if (rb)
+        {
+            float angle = 135.0f;//Random.Range(0, 360);
+            Vector2 vel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)) * LaunchSpeed;
+            rb.velocity = vel;
+
+            rb.drag = 0.0f;
         }
     }
 }
