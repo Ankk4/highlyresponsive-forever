@@ -3,9 +3,24 @@ using System.Collections;
 
 public class Ball : MonoBehaviour
 {
-    [Header("Public variables")]
+    [Header("Movement Speed")]
     public float LaunchSpeed = 50.0f;
     public float MaxSpeed = 50.0f;
+
+    [Header("Rotation")]
+    public float RotationSpeed = 10.0f;
+
+    [Header("Properties to stop bouncing")]
+    public float MaxDrag = 5.0f;
+    public float DragIncrement = 0.3f;
+
+    [Header("Properties to create movement when not bouncing")]
+    [Tooltip("Constant force to apply to ball so that it always moves left or right")]
+    public float ConstantXForce = 50.0f;
+    [Tooltip("Max y vel needed to start applying constant force to the x-axis for the ball to always move left or right")]
+    public float MaxVelY = 2.0f;
+
+    [Header("Object references")]
     public GameObject RefFloor;
 
 	// Use this for initialization
@@ -15,7 +30,7 @@ public class Ball : MonoBehaviour
         var rb = GetComponent<Rigidbody2D>();
         if (rb)
         {
-            float angle = Random.Range(0, 360);
+            float angle = 135.0f;//Random.Range(0, 360);
             Vector2 vel = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)) * LaunchSpeed;
             rb.velocity = vel;
         }
@@ -24,6 +39,21 @@ public class Ball : MonoBehaviour
 	// Update is called once per frame
 	void Update ()
     {
+        // Rotation
+        var rb = GetComponent<Rigidbody2D>();
+        if (rb)
+        {
+            if (rb.velocity.x > 0.0f)
+            {
+                // Closewise rotation
+                transform.Rotate(0, 0, RotationSpeed * TimeManager.DeltaTime);
+            }
+            else
+            {
+                // Anti-clockwise rotation
+                transform.Rotate(0, 0, -(RotationSpeed * TimeManager.DeltaTime));
+            }
+        }
     }
 
     void FixedUpdate()
@@ -32,6 +62,21 @@ public class Ball : MonoBehaviour
         var rb = GetComponent<Rigidbody2D>();
         if (rb)
         {
+            var vel = rb.velocity;
+
+            // Disable y velocity if on ground
+            if (rb.drag >= MaxDrag)
+            {
+                // Set position to exactly on top of floor
+                Vector3 pos = transform.localPosition;
+                pos.y = RefFloor.transform.localPosition.y + RefFloor.transform.localScale.y * 0.5f + transform.localScale.y * 0.5f; // Y position of floor plus half scale of floor and ball
+                transform.localPosition = pos;
+
+                // Remove y velocity
+                vel.y = 0.0f;
+                rb.velocity = vel;
+            }
+
             // Clamp speed to max
             float sqrSpeed = rb.velocity.sqrMagnitude;
             if (sqrSpeed > MaxSpeed * MaxSpeed)
@@ -40,10 +85,18 @@ public class Ball : MonoBehaviour
                 rb.velocity = newVel;
             }
 
-            // Reduce y velocity
-            var vel = rb.velocity;
-            //vel.y *= 0.99f;
-            rb.velocity = vel;
+            // Add force to x when not bouncing
+            if (vel.y < MaxVelY && vel.y > -MaxVelY)
+            {
+                if (vel.x > 0.0f)
+                {
+                    rb.AddForce(new Vector2(ConstantXForce, 0));
+                }
+                else if (vel.x < 0.0f)
+                {
+                    rb.AddForce(new Vector2(-ConstantXForce, 0));
+                }
+            }
         }
     }
 
@@ -54,9 +107,17 @@ public class Ball : MonoBehaviour
             var rb = GetComponent<Rigidbody2D>();
             if (rb)
             {
-                /*var vel = rb.velocity;
-                vel.y *= 0.98f;
-                rb.velocity = vel;*/
+                // Add linear drag
+                rb.drag = Mathf.Clamp(rb.drag + DragIncrement, 0, MaxDrag);
+            }
+        }
+        else if (collision.gameObject.GetComponent<Bullet>())
+        {
+            var rb = GetComponent<Rigidbody2D>();
+            if (rb)
+            {
+                // Reset linear drag when bullet hits
+                rb.drag = 0;
             }
         }
     }

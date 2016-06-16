@@ -3,22 +3,18 @@ using System.Collections;
 
 public class Bullet : MonoBehaviour
 {
+    [Header("Force applied to ball on hit")]
     public float Force = 100.0f;
 
-    private Vector2 dir;
-    private float speed;
-
 	// Use this for initialization
-	void Start () {
+	void Start ()
+    {
 	
 	}
 	
 	// Update is called once per frame
-	void Update () {
-        /*Vector2 localPos = transform.localPosition;
-        localPos += dir * speed * TimeManager.DeltaTime;
-        transform.localPosition = localPos;*/
-
+	void Update ()
+    {
         if (!GetComponent<SpriteRenderer>().isVisible)
         {
             Deactivate();
@@ -32,9 +28,6 @@ public class Bullet : MonoBehaviour
 
         // Set local position
         transform.localPosition = pos;
-
-        //this.dir = dir;
-        //this.speed = speed;
 
         var rb = GetComponent<Rigidbody2D>();
         if (rb)
@@ -103,14 +96,16 @@ public class Bullet : MonoBehaviour
                 {
                     vel.x = -vel.x;
                 }
-                
+
+                rb.velocity = vel; // Assign temp vel to rb vel
+
                 if (leftForce)
                 {
-                    rb.AddForce(new Vector2(-Force, Force), ForceMode2D.Impulse);
+                    rb.AddForce(new Vector2(-Force, Force * 2.0f), ForceMode2D.Impulse);
                 }
                 else
                 {
-                    rb.AddForce(new Vector2(Force, Force), ForceMode2D.Impulse);
+                    rb.AddForce(new Vector2(Force, Force * 2.0f), ForceMode2D.Impulse);
                 }
             }
             Deactivate();
