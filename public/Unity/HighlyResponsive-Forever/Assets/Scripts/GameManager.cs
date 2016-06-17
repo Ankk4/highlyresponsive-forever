@@ -1,18 +1,26 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class GameManager : MonoBehaviour
 {
+    [Header("Timer")]
+    public float TimeTillOvertime; // When bullets start raining down
+
     [Header("Object references")]
     public Player RefPlayer;
     public Ball RefBall;
 
-
     [Header("UI references")]
     public GameObject RefGameOverPanel;
+    public GameObject RefLifePanel;
+    public GameObject RefBombPanel;
+    public Text RefHighScore;
+    public Text RefCurrentScore;
+    public Text RefTimer;
 
-	// Use this for initialization
-	void Start ()
+    // Use this for initialization
+    void Start ()
     {
 	
 	}
@@ -25,6 +33,12 @@ public class GameManager : MonoBehaviour
         {
             EndLevel(false);
         }
+
+        if (RefPlayer.IsAlive() && Input.GetKeyDown(KeyCode.Escape))
+        {
+            // Toggle pause
+            Pause();
+        }
 	}
 
     #region Buttons
@@ -32,6 +46,7 @@ public class GameManager : MonoBehaviour
     public void Button_Retry()
     {
         RefGameOverPanel.SetActive(false);
+        Pause(false);
         RefPlayer.Reset();
         RefBall.Reset();
     }
@@ -40,6 +55,7 @@ public class GameManager : MonoBehaviour
 
     public void EndLevel(bool win)
     {
+        Pause(true);
         if (win)
         {
             // Display win screen
@@ -73,5 +89,18 @@ public class GameManager : MonoBehaviour
 
         // Pause or resume gameobjects
         bool pauseState = TimeManager.IsPause(); // Current pause state
+
+        // Pause player
+        Pause p = RefPlayer.GetComponent<Pause>();
+        if (p)
+        {
+            p.Toggle(pauseState);
+        }
+
+        p = RefBall.GetComponent<Pause>();
+        if (p)
+        {
+            p.Toggle(pauseState);
+        }
     }
 }

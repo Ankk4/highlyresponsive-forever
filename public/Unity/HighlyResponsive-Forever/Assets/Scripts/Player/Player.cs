@@ -22,7 +22,7 @@ public class Player : MonoBehaviour
     public float NormalSpeed;
     public float MeleeSpeed;
     public float ShootInterval;
-    public int Lives;
+    public int MaxLives;
 
     [Header("Force applied to ball on hit")]
     public float Force = 100.0f;
@@ -38,7 +38,7 @@ public class Player : MonoBehaviour
     private float currentSpeed;
     private float horizontalBoundSize;
     private bool? lastDir; // Left = false | Right = true
-    private int defaultLives;
+    private int Lives;
 
     // Use this for initialization
     void Start ()
@@ -64,12 +64,17 @@ public class Player : MonoBehaviour
 
         lastDir = null;
 
-        defaultLives = Lives;
+        Lives = MaxLives;
     }
 	
 	// Update is called once per frame
 	void Update ()
     {
+        if (TimeManager.IsPause())
+        {
+            return;
+        }
+
         // Shoot timer updates
         shootTimer.Update();
 
@@ -218,7 +223,7 @@ public class Player : MonoBehaviour
                     pos.x = 0.0f;
                     transform.localPosition = pos;
 
-                    Lives = Mathf.Clamp(Lives - 1, 0, defaultLives);
+                    Lives = Mathf.Clamp(Lives - 1, 0, MaxLives);
                 }
             }
         }
@@ -266,6 +271,6 @@ public class Player : MonoBehaviour
 
         lastDir = null;
 
-        Lives = defaultLives; 
+        Lives = MaxLives; 
     }
 }
