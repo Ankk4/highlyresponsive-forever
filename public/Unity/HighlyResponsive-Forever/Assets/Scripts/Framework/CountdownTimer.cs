@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class Timer : ScriptableObject
+public class CountdownTimer : ScriptableObject
 {
     public float CurrentTime
     {
@@ -23,7 +23,7 @@ public class Timer : ScriptableObject
     {
         get
         {
-            return MaxTime - CurrentTime;
+            return CurrentTime;
         }
     }
 
@@ -35,7 +35,7 @@ public class Timer : ScriptableObject
             {
                 return 1.0f;
             }
-            return CurrentTime / MaxTime;
+            return 1 - (CurrentTime / MaxTime);
         }
     }
 
@@ -59,22 +59,22 @@ public class Timer : ScriptableObject
 
         float dt = TimeManager.DeltaTime;
         
-        if (m_timer < m_maxTime)
+        if (m_timer > 0.0f)
         {
-            m_timer += dt;
+            m_timer = Mathf.Clamp(m_timer - dt, 0, m_maxTime);
         }
 	}
 
     public void Init(float maxTime, bool pause)
     {
-        m_timer = 0.0f;
+        m_timer = maxTime;
         m_maxTime = maxTime;
         m_pause = pause;
     }
 
     public void Reset(bool pause = false)
     {
-        m_timer = 0.0f;
+        m_timer = m_maxTime;
         if (pause)
         {
             m_pause = true;
@@ -83,14 +83,14 @@ public class Timer : ScriptableObject
 
     public void ResetAll()
     {
-        Reset();
         m_maxTime = 0.0f;
+        Reset();
         m_pause = false;
     }
 
     public bool IsTime()
     {
-        return m_timer >= m_maxTime;
+        return m_timer <= 0.0f;
     }
 
     public void Pause()
@@ -110,6 +110,6 @@ public class Timer : ScriptableObject
 
     public void SetIsTime()
     {
-        m_timer = m_maxTime;
+        m_timer = 0.0f;
     }
 }

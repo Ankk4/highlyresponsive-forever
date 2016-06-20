@@ -23,6 +23,10 @@ public class Player : MonoBehaviour
     public float MeleeSpeed;
     public float ShootInterval;
     public int MaxLives;
+    [Tooltip("Number of bomb(s) at the start")]
+    public int DefaultBombs;
+    [Tooltip("Maximum number of bomb(s) throughout the game")]
+    public int MaxBombs;
 
     [Header("Force applied to ball on hit")]
     public float Force = 100.0f;
@@ -32,13 +36,18 @@ public class Player : MonoBehaviour
     [Header("Object references")]
     public ResourcePool RefBulletPool;
 
+    // Properties
+    public float CurrentSpeed { set { currentSpeed = value; } }
+    public int Lives { get { return lives; } }
+    public int Bombs { get { return bombs; } }
+
     private FSM fsm;
     private Timer shootTimer;
-    public float CurrentSpeed { set { currentSpeed = value; } }
     private float currentSpeed;
     private float horizontalBoundSize;
     private bool? lastDir; // Left = false | Right = true
-    private int Lives;
+    private int lives;
+    private int bombs;
 
     // Use this for initialization
     void Start ()
@@ -64,7 +73,9 @@ public class Player : MonoBehaviour
 
         lastDir = null;
 
-        Lives = MaxLives;
+        lives = MaxLives;
+
+        bombs = DefaultBombs = Mathf.Clamp(DefaultBombs, 0, MaxBombs);
     }
 	
 	// Update is called once per frame
@@ -116,7 +127,6 @@ public class Player : MonoBehaviour
         }
 
         // Melee
-        var anim = GetComponent<Animator>();
         if (!isMelee())
         {
             if (Input.GetKeyDown(MeleeKey))
@@ -218,22 +228,31 @@ public class Player : MonoBehaviour
                 }
                 else
                 {
-                    // Hit, reduce lives
-                    var pos = transform.localPosition;
-                    pos.x = 0.0f;
-                    transform.localPosition = pos;
-
-                    Lives = Mathf.Clamp(Lives - 1, 0, MaxLives);
+                    hit();
                 }
             }
         }
+    }
+
+    private void hit()
+    {
+        // Reset position to middle
+        var pos = transform.localPosition;
+        pos.x = 0.0f;
+        transform.localPosition = pos;
+
+        // Deduct lives by 1 and clamp value between 0 and max lives specified
+        lives = Mathf.Clamp(lives - 1, 0, MaxLives);
+
+        // Add a bomb
+        bombs = Mathf.Clamp(bombs + 1, 0, MaxBombs);
     }
 
     #region State check functions
 
     public bool IsAlive()
     {
-        return Lives > 0;
+        return lives > 0;
     }
 
     bool isMelee()
@@ -271,6 +290,8 @@ public class Player : MonoBehaviour
 
         lastDir = null;
 
-        Lives = MaxLives; 
+        lives = MaxLives;
+
+        bombs = DefaultBombs;
     }
 }
