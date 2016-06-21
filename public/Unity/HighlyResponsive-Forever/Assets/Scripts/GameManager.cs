@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
     [Header("Object references")]
     public Player RefPlayer;
     public Ball RefBall;
+    public TileMap RefMap;
 
     [Header("UI references")]
     public GameObject RefGameOverPanel;
@@ -27,14 +28,29 @@ public class GameManager : MonoBehaviour
     public Text RefMaxCombo;
     public Text RefCombo;
     public Text RefTimer;
-    
+
+    // Properties
+    public int TileCount { set { tileCount = value; } get { return tileCount; } }
+    public int DefaultTileCount { set { defaultTileCount = value; } get { return defaultTileCount; } }
+
     private List<GameObject> refLives = new List<GameObject>();
     private List<GameObject> refBombs = new List<GameObject>();
     private CountdownTimer overtimeTimer;
 
+    // Tile count
+    private int tileCount;
+    private int defaultTileCount;
+
+    // Game states
+    private bool win;
+    private bool gameover;
+
     // Use this for initialization
     void Start()
     {
+        win = false;
+        gameover = false;
+
         // Fetch all lives UI object
         if (RefLifePanel)
         {
@@ -64,6 +80,9 @@ public class GameManager : MonoBehaviour
         overtimeTimer.Init(TimeTillOvertime, false);
 
         refreshUI();
+
+        // Load map
+        RefMap.Load("1");
     }
 
     // Update is called once per frame
@@ -72,8 +91,10 @@ public class GameManager : MonoBehaviour
         // Not gameover and should change to gameover, set game over
         if (!isGameOver() && shouldGameOver())
         {
-            EndLevel(false);
+            EndLevel(win);
         }
+
+        checkEnd();
 
         // Updates when not gameover
         if (!shouldGameOver())
@@ -87,6 +108,21 @@ public class GameManager : MonoBehaviour
             }
 
             refreshUI();
+        }
+    }
+
+    public void AddCount(int add)
+    {
+        tileCount += add;
+    }
+
+    public void ReduceCount(int reduce)
+    {
+        tileCount -= reduce;
+
+        if (tileCount <= 0)
+        {
+            win = true;
         }
     }
 
@@ -108,9 +144,13 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void RestartLevel()
     {
+        win = false;
+        gameover = false;
+        TileCount = DefaultTileCount;
         Pause(false);
         RefPlayer.Reset();
         RefBall.Reset();
+        RefMap.Reset();
     }
 
     /// <summary>
@@ -123,6 +163,7 @@ public class GameManager : MonoBehaviour
         if (win)
         {
             // Display win screen
+            RefGameOverPanel.SetActive(true);
         }
         else
         {
@@ -212,6 +253,27 @@ public class GameManager : MonoBehaviour
         RefTimer.text = ((int)(overtimeTimer.CurrentTime * 10.0f)).ToString();
     }
 
+    private void checkEnd()
+    {
+        if (gameover)
+        {
+            return;
+        }
+
+        if (!RefPlayer.IsAlive())
+        {
+            gameover = true;
+            win = false;
+        }
+        
+        // Flag for gameover and win
+        if (tileCount <= 0)
+        {
+            gameover = true;
+            win = true;
+        }
+    }
+
     #region State check functions
 
     private bool isGameOver()
@@ -221,18 +283,7 @@ public class GameManager : MonoBehaviour
 
     private bool shouldGameOver()
     {
-        return !RefPlayer.IsAlive();
-    }
-
-    private bool shouldGameOver(ref bool win)
-    {
-        win = false;
-        if (!RefPlayer.IsAlive())
-        {
-            // Check if all tiles or boss is cleared
-        }
-
-        return shouldGameOver();
+        return gameover;
     }
 
     #endregion State check functions
