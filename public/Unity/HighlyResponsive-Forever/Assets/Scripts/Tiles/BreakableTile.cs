@@ -28,6 +28,9 @@ public class BreakableTile : Tile
         --hitsLeft;
 
         updateState();
+
+        // Add score
+        transform.root.GetComponent<GameManager>().HitTile();
     }
 
     protected override void OnTriggerEnter2D(Collider2D collision)
@@ -55,6 +58,13 @@ public class BreakableTile : Tile
         
         hitsLeft = DefaultHitsLeft;
         updateState();
+
+        // Add score
+        var game = transform.root.GetComponent<GameManager>();
+        if (game)
+        {
+
+        }
     }
 
     private void updateState()

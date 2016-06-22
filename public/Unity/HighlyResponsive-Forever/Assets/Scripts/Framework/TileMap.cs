@@ -63,7 +63,7 @@ public class TileMap : MonoBehaviour
                 // Adding temp tiles to map
                 iMap.Add(tempTiles);
             }
-            
+
             if (loadMap(iMap))
             {
                 return true;
@@ -76,7 +76,7 @@ public class TileMap : MonoBehaviour
     private bool loadMap(List<List<int>> iMap)
     {
         // Error checking
-        if (NumOfTiles.x <= 0 || NumOfTiles.y <= 0)
+        if (NumOfTiles.x <= 0 || NumOfTiles.y <= 0 || iMap == null)
         {
             return false;
         }
@@ -91,43 +91,27 @@ public class TileMap : MonoBehaviour
 
             for (int col = 0; col < NumOfTiles.x; ++col)
             {
-                if (iMap == null)
+                // Load tile from map
+                int tileID = iMap[row][col];
+                if (tileID != 0 && tileID < tiles.Count) // Skip empty tile
                 {
-                    /*if (row > 1 && row < 6)
-                    {
-                        // Load default tile
-                        var newTile = Instantiate(tiles[0]);
-                        newTile.transform.parent = transform;
-                        newTile.transform.localPosition = calcPos(screenSize, NumOfTiles, tileSize, row, col);
-                        newTile.transform.localScale = new Vector3(tileSize, tileSize);
+                    var newTile = Instantiate(tiles[tileID]);
+                    newTile.transform.parent = transform;
+                    newTile.transform.localPosition = calcPos(screenSize, NumOfTiles, tileSize, row, col);
+                    newTile.transform.localScale = new Vector3(tileSize, tileSize);
 
-                        tempRow.Add(newTile); // Add to temp row
-                    }*/
+                    tempRow.Add(newTile); // Add to temp row
+
+                    // Add to tile count
+                    if (tileID == 1)
+                    {
+                        ++(transform.root.GetComponent<GameManager>().TileCount);
+                    }
                 }
                 else
                 {
-                    // Load tile from map
-                    int tileID = iMap[row][col];
-                    if (tileID != 0 && tileID < tiles.Count) // Skip empty tile
-                    {
-                        var newTile = Instantiate(tiles[tileID]);
-                        newTile.transform.parent = transform;
-                        newTile.transform.localPosition = calcPos(screenSize, NumOfTiles, tileSize, row, col);
-                        newTile.transform.localScale = new Vector3(tileSize, tileSize);
-
-                        tempRow.Add(newTile); // Add to temp row
-
-                        // Add to tile count
-                        if (tileID == 1)
-                        {
-                            ++(transform.root.GetComponent<GameManager>().TileCount);
-                        }
-                    }
-                    else
-                    {
-                        // Empty tile
-                        tempRow.Add(null);
-                    }
+                    // Empty tile
+                    tempRow.Add(null);
                 }
             }
 

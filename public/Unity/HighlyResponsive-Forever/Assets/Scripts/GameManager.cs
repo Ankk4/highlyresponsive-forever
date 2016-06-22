@@ -8,6 +8,9 @@ public class GameManager : MonoBehaviour
     [Header("Timer")]
     public float TimeTillOvertime; // When bullets start raining down
 
+    [Header("Score")]
+    public int InitialCardScore;
+
     [Header("Data caps")]
     [Tooltip("Number of digits for score")]
     public float ScoreCap;
@@ -30,12 +33,87 @@ public class GameManager : MonoBehaviour
     public Text RefTimer;
 
     // Properties
-    public int TileCount { set { tileCount = value; } get { return tileCount; } }
-    public int DefaultTileCount { set { defaultTileCount = value; } get { return defaultTileCount; } }
+    public int TileCount
+    {
+        set
+        {
+            tileCount = value;
+        }
+
+        get
+        {
+            return tileCount;
+        }
+    }
+    public int DefaultTileCount
+    {
+        set
+        {
+            defaultTileCount = value;
+        }
+
+        get
+        {
+            return defaultTileCount;
+        }
+    }
+    public int Score
+    {
+        set
+        {
+            score = value;
+        }
+
+        get
+        { return score;
+        }
+    }
+    public int Highscore
+    {
+        get
+        {
+            return highscore;
+        }
+
+        set
+        {
+            highscore = value;
+        }
+    }
+    public int Combo
+    {
+        get
+        {
+            return combo;
+        }
+
+        set
+        {
+            combo = value;
+        }
+    }
+    public int MaxCombo
+    {
+        get
+        {
+            return maxCombo;
+        }
+
+        set
+        {
+            maxCombo = value;
+        }
+    }
 
     private List<GameObject> refLives = new List<GameObject>();
     private List<GameObject> refBombs = new List<GameObject>();
     private CountdownTimer overtimeTimer;
+
+    // Scores and combos
+    private int score;
+    private int highscore;
+    private int combo;
+    private int maxCombo;
 
     // Tile count
     private int tileCount;
@@ -144,10 +222,24 @@ public class GameManager : MonoBehaviour
     /// </summary>
     public void RestartLevel()
     {
+        // Reset game state
         win = false;
         gameover = false;
+
+        // Reset win condition
         TileCount = DefaultTileCount;
+
+        // Reset score and combo
+        if (highscore < score)
+        {
+            highscore = score;
+        }
+        maxCombo = combo = score = 0;
+
+        // Pause game
         Pause(false);
+
+        // Reset key factors of level
         RefPlayer.Reset();
         RefBall.Reset();
         RefMap.Reset();
@@ -159,6 +251,12 @@ public class GameManager : MonoBehaviour
     /// <param name="win">Win or lose</param>
     public void EndLevel(bool win)
     {
+        // Set highscore
+        if (highscore < score)
+        {
+            highscore = score;
+        }
+
         Pause(true);
         if (win)
         {
@@ -213,6 +311,16 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    public void BallTouchFloor()
+    {
+        // Reset combo
+        if (maxCombo < combo)
+        {
+            maxCombo = combo;
+        }
+        combo = 0;
+    }
+
     private void refreshUI()
     {
         // Lives
@@ -251,6 +359,12 @@ public class GameManager : MonoBehaviour
 
         // Timer
         RefTimer.text = ((int)(overtimeTimer.CurrentTime * 10.0f)).ToString();
+
+        // Scores and combos
+        RefCurrentScore.text = score.ToString();
+        RefHighScore.text = highscore.ToString();
+        RefCombo.text = combo.ToString();
+        RefMaxCombo.text = maxCombo.ToString();
     }
 
     private void checkEnd()
@@ -287,4 +401,14 @@ public class GameManager : MonoBehaviour
     }
 
     #endregion State check functions
+
+    #region Score and Combos
+
+    public void HitTile()
+    {
+        ++combo;
+        score += InitialCardScore + (int)Mathf.Pow(combo - 1, 2) * 20;
+    }
+
+    #endregion Score and Combos
 }

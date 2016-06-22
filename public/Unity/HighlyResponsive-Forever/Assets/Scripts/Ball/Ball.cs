@@ -114,6 +114,7 @@ public class Ball : MonoBehaviour
                 // Add linear drag
                 rb.drag = Mathf.Clamp(rb.drag + DragIncrement, 0, MaxDrag);
             }
+            touchFloor();
         }
         else if (collision.gameObject.GetComponent<Bullet>())
         {
@@ -140,5 +141,11 @@ public class Ball : MonoBehaviour
 
             rb.drag = 0.0f;
         }
+    }
+
+    private void touchFloor()
+    {
+        // Reset game manager data
+        transform.root.GetComponent<GameManager>().BallTouchFloor();
     }
 }
