@@ -11,11 +11,13 @@ public class GameManager : MonoBehaviour
     [Header("Score")]
     public int InitialCardScore;
 
-    [Header("Data caps")]
+    [Header("Digit caps")]
     [Tooltip("Number of digits for score")]
     public float ScoreCap;
     [Tooltip("Number of digits for combo")]
     public float ComboCap;
+    [Tooltip("Number of digits for timer")]
+    public float TimerCap;
 
     [Header("Object references")]
     public Player RefPlayer;
@@ -319,6 +321,14 @@ public class GameManager : MonoBehaviour
             maxCombo = combo;
         }
         combo = 0;
+    }
+
+    private string convertToUI(int value, int cap)
+    {
+        string result = "";
+        var digits = Mathf.FloorToInt(Mathf.Log10(value) + 1);
+        
+        return result;
     }
 
     private void refreshUI()
